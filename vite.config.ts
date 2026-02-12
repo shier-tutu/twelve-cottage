@@ -17,5 +17,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base:'/twelve-cottage/'
+  base:'/twelve-cottage/',
+  server: {
+    host: true, // 允许局域网访问
+    port: 5173
+  }
 })
