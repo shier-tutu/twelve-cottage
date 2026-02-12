@@ -55,7 +55,8 @@ import {
   TitleComponent,
   TooltipComponent,
   GridComponent,
-  LegendComponent
+  LegendComponent,
+  MarkAreaComponent
 } from 'echarts/components'
 
 // 注册 ECharts 组件
@@ -66,7 +67,8 @@ use([
   TitleComponent,
   TooltipComponent,
   GridComponent,
-  LegendComponent
+  LegendComponent,
+  MarkAreaComponent
 ])
 
 const chartOption = ref({})
@@ -267,6 +269,22 @@ const updateChart = () => {
         },
         lineStyle: {
           width: 2
+        },
+        markArea: {
+          silent: true,
+          itemStyle: {
+            color: 'rgba(144, 238, 144, 0.2)' // 浅绿色背景
+          },
+          data: [
+            [
+              {
+                yAxis: 3.7
+              },
+              {
+                yAxis: 10
+              }
+            ]
+          ]
         }
       }
     ]
