@@ -10,6 +10,22 @@
         {{ filter.label }}
       </button>
     </div>
+    <div class="statistics-container">
+      <div class="stat-item">
+        <div class="stat-label">最大血糖波动幅度</div>
+        <div class="stat-value">{{ statistics.maxFluctuation }} mmol/L</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">最高血糖</div>
+        <div class="stat-value">{{ statistics.maxValue }} mmol/L</div>
+        <div class="stat-time">{{ statistics.maxTime }}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">最低血糖</div>
+        <div class="stat-value">{{ statistics.minValue }} mmol/L</div>
+        <div class="stat-time">{{ statistics.minTime }}</div>
+      </div>
+    </div>
     <div class="chart-container">
       <v-chart :option="chartOption" style="width: 100%; height: 100%" />
     </div>
@@ -44,6 +60,15 @@ use([
 const chartOption = ref({})
 const selectedFilter = ref(24)
 const allData = ref<any[]>([])
+
+// 统计数据
+const statistics = ref({
+  maxFluctuation: 0,
+  maxValue: 0,
+  maxTime: '',
+  minValue: 0,
+  minTime: ''
+})
 
 const timeFilters = [
   { label: '3小时', value: 3 },
@@ -111,8 +136,37 @@ const updateChart = () => {
     }
   })
 
-  // 5. 计算 Y 轴最大值：向上取整到最接近的 5 的倍数，最小值为 30
+  // 5. 计算统计数据
   const values = chartData.map(d => d[1])
+  if (values.length > 0) {
+    const maxVal = Math.max(...values)
+    const minVal = Math.min(...values)
+    const maxIndex = values.indexOf(maxVal)
+    const minIndex = values.indexOf(minVal)
+
+    // 格式化时间
+    const formatTime = (timeStr: string) => {
+      const time = new Date(timeStr)
+      const month = (time.getMonth() + 1).toString().padStart(2, '0')
+      const date = time.getDate().toString().padStart(2, '0')
+      const hours = time.getHours().toString().padStart(2, '0')
+      const minutes = time.getMinutes().toString().padStart(2, '0')
+      return `${month}-${date} ${hours}:${minutes}`
+    }
+
+    const maxData = chartData[maxIndex]
+    const minData = chartData[minIndex]
+
+    statistics.value = {
+      maxFluctuation: parseFloat((maxVal - minVal).toFixed(1)),
+      maxValue: maxVal,
+      maxTime: maxData ? formatTime(maxData[0]) : '',
+      minValue: minVal,
+      minTime: minData ? formatTime(minData[0]) : ''
+    }
+  }
+
+  // 6. 计算 Y 轴最大值：向上取整到最接近的 5 的倍数，最小值为 30
   const maxValue = values.length > 0 ? Math.max(...values) : 30
   const yAxisMax = Math.max(30, Math.ceil(maxValue / 5) * 5)
 
@@ -259,6 +313,41 @@ onMounted(async () => {
   border-color: #667eea;
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.statistics-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 10px;
+  background: white;
+  gap: 10px;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 15px 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.stat-time {
+  font-size: 11px;
+  color: #868e96;
 }
 
 .chart-container {
